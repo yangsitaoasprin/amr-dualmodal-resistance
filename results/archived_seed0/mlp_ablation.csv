@@ -1,0 +1,2 @@
+model,epochs,fold,train_rho,test_rho
+mlp_ablation,25,0,0.9072972985118507,0.5506992329843702
