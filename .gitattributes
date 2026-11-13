@@ -1,0 +1,6 @@
+# The ProteinGym score tables are shipped byte-identical to the upstream archive
+# and their md5s are asserted by data/proteingym_zs/checksums.md5. Never apply
+# end-of-line conversion to them: a CRLF checkout on Windows would change the
+# md5 and make `18b_fetch_proteingym_zs.py --verify` fail for a clean clone.
+data/proteingym_zs/*.csv -text
+data/proteingym_zs/checksums.md5 -text

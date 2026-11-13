@@ -1,0 +1,9 @@
+# md5 of the five ProteinGym v1.3 zero-shot score tables shipped in this
+# directory. Extracted byte-for-byte from zero_shot_substitutions_scores.zip
+# (md5 7912b6a1f6c80b0b78c12a15c84d96fc) on 2026-11-13.
+# Check with: python ../code/18b_fetch_proteingym_zs.py --verify
+886b01253df9e84546102e2bec593286  BLAT_ECOLX_Stiffler_2015.csv
+3e19afc6960c4e4e04e06c2de358d52d  A4GRB6_PSEAI_Chen_2020.csv
+b77b4f5b5911a6a6b3ea58d55d56ade7  AACC1_PSEAI_Dandage_2018.csv
+ad5ed816386a955aa9cb81fbe1c9dac6  KKA2_KLEPN_Melnikov_2014.csv
+16ca8148457e109251199a73249dbb61  DYR_ECOLI_Nguyen_2023.csv

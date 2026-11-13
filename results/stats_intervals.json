@@ -1,0 +1,80 @@
+{
+  "structural_gain": {
+    "quantity": "dual-minus-sequence Spearman rho, TEM-1, ESM-2 8M",
+    "point_estimate": 0.1634,
+    "variants": 4996,
+    "positions": 263,
+    "bootstrap_resamples": 2000,
+    "variant_bootstrap_95CI": [
+      0.1449,
+      0.1814
+    ],
+    "variant_bootstrap_width": 0.0364,
+    "position_cluster_bootstrap_95CI": [
+      0.1102,
+      0.2142
+    ],
+    "position_cluster_bootstrap_width": 0.1039,
+    "width_inflation": 2.85
+  },
+  "tost": [
+    {
+      "margin_sensitivity": {
+        "0.02": {
+          "tost_p": 0.0297,
+          "equivalent_at_5pct": true
+        },
+        "0.03": {
+          "tost_p": 0.0062,
+          "equivalent_at_5pct": true
+        },
+        "0.05": {
+          "tost_p": 0.0007,
+          "equivalent_at_5pct": true
+        },
+        "0.10": {
+          "tost_p": 0.0,
+          "equivalent_at_5pct": true
+        }
+      },
+      "comparison": "GCNv2 vs GBM, TEM-1, 5 paired folds",
+      "mean_difference": 0.0049,
+      "se": 0.0058,
+      "margin": 0.05,
+      "tost_p_lower": 0.0003,
+      "tost_p_upper": 0.0007,
+      "tost_p": 0.0007,
+      "equivalent_at_5pct": true,
+      "paired_t_p": 0.4481
+    },
+    {
+      "margin_sensitivity": {
+        "0.02": {
+          "tost_p": 0.2936,
+          "equivalent_at_5pct": false
+        },
+        "0.03": {
+          "tost_p": 0.1055,
+          "equivalent_at_5pct": false
+        },
+        "0.05": {
+          "tost_p": 0.0152,
+          "equivalent_at_5pct": true
+        },
+        "0.10": {
+          "tost_p": 0.0007,
+          "equivalent_at_5pct": true
+        }
+      },
+      "comparison": "GCNv2 vs GBM, VIM-2, 5 paired folds",
+      "mean_difference": 0.0134,
+      "se": 0.0111,
+      "margin": 0.05,
+      "tost_p_lower": 0.0023,
+      "tost_p_upper": 0.0152,
+      "tost_p": 0.0152,
+      "equivalent_at_5pct": true,
+      "paired_t_p": 0.2939
+    }
+  ]
+}

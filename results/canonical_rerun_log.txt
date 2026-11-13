@@ -1,0 +1,387 @@
+
+==============================================================================
+RUN 22_verify_and_dump.py
+
+================================================================================================
+0. repository/data/ampc_modeling_table.csv  vs  <proj>/data/vim2_modeling_table.csv
+================================================================================================
+  ampc cols : ['mutant', 'mutated_sequence', 'DMS_score', 'DMS_score_bin', 'wt', 'pos', 'mut', 'esm2', 'blosum62', 'd_hydro', 'd_vol', 'd_chg', 'pLDDT', 'contact_num', 'd_act', 'd_loop']
+  vim2 cols : ['mutant', 'mutated_sequence', 'DMS_score', 'DMS_score_bin', 'wt', 'pos', 'mut', 'esm2', 'blosum62', 'd_hydro', 'd_vol', 'd_chg', 'pLDDT', 'contact_num', 'd_act', 'd_loop']
+  shapes    : (5004, 16) (5004, 16)
+  common-cols identical (sorted by mutant): True
+
+================================================================================================
+1. 8M modulo-5 逐折 rho 补算与归档值核对
+================================================================================================
+  assay                  model              rho_calc   rho_arch      absdiff      verdict
+  TEM1_Stiffler2015      seq               0.5368262  0.5368262     0.00e+00  PASS
+  TEM1_Stiffler2015      dual_full         0.6962634  0.6962634     0.00e+00  PASS
+  TEM1_Stiffler2015      dual_noanchors    0.6959154  0.6959154     0.00e+00  PASS
+  VIM2_Chen2020          seq               0.5064661  0.5064661     0.00e+00  PASS
+  VIM2_Chen2020          dual_full         0.7292596  0.7292596     0.00e+00  PASS
+  VIM2_Chen2020          dual_noanchors    0.7407751  0.7407751     0.00e+00  PASS
+  APH3II_Melnikov2014    seq               0.3747972  0.3747972     0.00e+00  PASS
+  APH3II_Melnikov2014    dual_full         0.6431802  0.6431802     0.00e+00  PASS
+  APH3II_Melnikov2014    dual_noanchors    0.5758563  0.5758563     0.00e+00  PASS
+  DHFR_Nguyen2023        seq               0.2811679  0.2811679     0.00e+00  PASS
+  DHFR_Nguyen2023        dual_full         0.3015693  0.3015693     0.00e+00  PASS
+  DHFR_Nguyen2023        dual_noanchors    0.3467276  0.3467276     0.00e+00  PASS
+  核对总判: PASS —— 全部逐位一致
+
+================================================================================================
+2. AAC(3)-I 反向锚点实验复算（8M 与 650M）+ 配对 t 检验
+================================================================================================
+  AAC 8m     seq 0.242895 | dual 0.251394 (paired p=0.8336) | +d_coa 0.237669 (paired p=0.3173)
+        seq folds   : [0.1878, 0.1666, 0.3137, 0.3318, 0.2145]
+        dual folds  : [0.2292, 0.2867, 0.22, 0.2752, 0.246]
+        anchor folds: [0.218, 0.2916, 0.1814, 0.2942, 0.2031]
+  AAC 650m   seq 0.476748 | dual 0.446468 (paired p=0.3590) | +d_coa 0.428015 (paired p=0.0169)
+        seq folds   : [0.501, 0.4499, 0.558, 0.444, 0.4309]
+        dual folds  : [0.4997, 0.4856, 0.425, 0.4432, 0.3787]
+        anchor folds: [0.4684, 0.4631, 0.4117, 0.4218, 0.3751]
+
+================================================================================================
+3. 落盘：逐折 rho 表 + TEM-1 8M 折外预测
+================================================================================================
+  wrote repository/results/recomputed_folds_8m.csv
+  wrote oof_predictions_tem1_8m.npz
+  折外 pooled rho            = 0.6923046759
+  折外 5 折 rho mean         = 0.6962633905
+  折外 5 折 rho std (ddof=0) = 0.0316891263
+  折外 pooled AUC            = 0.8547065835
+  归档口径（offset anchors）参考     = 0.7037232728
+  本次规范口径（corrected anchors） = 0.6962633905
+  门槛: PASS —— 折外预测与逐折重算自洽，可出图
+  wrote tem1_per_position_pred_vs_true.csv  (rows=263)
+
+STATUS OK  (31.3 s)
+
+==============================================================================
+RUN 10_esm2_backbone_eval.py
+.156092 0.073943 0.575452                                    
+                   TEM1_Firnberg2014             full_assay   esm2_650m_zeroshot 0.737102      NaN 0.876206                                    
+                   TEM1_Firnberg2014             cv5_modulo         gbm_650m_seq 0.763133 0.029283 0.894626 folds=0.772,0.710,0.778,0.759,0.797
+                   TEM1_Firnberg2014             cv5_modulo        gbm_650m_dual 0.814042 0.017343 0.917292 folds=0.805,0.790,0.829,0.807,0.838
+                   TEM1_Firnberg2014             cv5_modulo gbm_650m_struct_only 0.504333 0.047385 0.741099                                    
+                       VIM2_Chen2020             full_assay   esm2_650m_zeroshot 0.738172      NaN 0.904645                                    
+                       VIM2_Chen2020             cv5_modulo         gbm_650m_seq 0.744389 0.022579 0.910256 folds=0.775,0.730,0.713,0.740,0.764
+                       VIM2_Chen2020             cv5_modulo        gbm_650m_dual 0.795192 0.035009 0.937532 folds=0.822,0.791,0.751,0.765,0.846
+                       VIM2_Chen2020             cv5_modulo gbm_650m_struct_only 0.614461 0.047875 0.839084                                    
+                   AAC3I_Dandage2018             full_assay   esm2_650m_zeroshot 0.487450      NaN 0.746504                                    
+                   AAC3I_Dandage2018             cv5_modulo         gbm_650m_seq 0.476748 0.047106 0.748613 folds=0.501,0.450,0.558,0.444,0.431
+                   AAC3I_Dandage2018             cv5_modulo        gbm_650m_dual 0.446468 0.043427 0.735246 folds=0.500,0.486,0.425,0.443,0.379
+                   AAC3I_Dandage2018             cv5_modulo gbm_650m_struct_only 0.146340 0.099446 0.576740                                    
+                       TEM1_Deng2012 external_from_Stiffler        gbm_650m_dual 0.556225      NaN 0.794517                                    
+                   TEM1_Firnberg2014 external_from_Stiffler        gbm_650m_dual 0.869069      NaN 0.948300                                    
+    TEM1_Stiffler2015->VIM2_Chen2020          cross_protein        gbm_650m_dual 0.772772      NaN 0.932172                                    
+TEM1_Stiffler2015->AAC3I_Dandage2018          cross_protein        gbm_650m_dual 0.446252      NaN 0.729535                                    
+    VIM2_Chen2020->TEM1_Stiffler2015          cross_protein        gbm_650m_dual 0.769176      NaN 0.906700                                    
+    VIM2_Chen2020->AAC3I_Dandage2018          cross_protein        gbm_650m_dual 0.495204      NaN 0.752147                                    
+AAC3I_Dandage2018->TEM1_Stiffler2015          cross_protein        gbm_650m_dual 0.738180      NaN 0.891162                                    
+    AAC3I_Dandage2018->VIM2_Chen2020          cross_protein        gbm_650m_dual 0.736254      NaN 0.914317                                    
+saved repository/code/../results/esm2_650m_evaluation.csv
+==== 3b ====
+            assay               protocol              model      rho  rho_std      auc                                note
+TEM1_Stiffler2015             full_assay   esm2_3b_zeroshot 0.589340      NaN 0.801989                                    
+TEM1_Stiffler2015             cv5_modulo         gbm_3b_seq 0.652062 0.027177 0.837658 folds=0.695,0.622,0.628,0.647,0.669
+TEM1_Stiffler2015             cv5_modulo        gbm_3b_dual 0.734573 0.027780 0.873447 folds=0.726,0.702,0.712,0.758,0.775
+TEM1_Stiffler2015             cv5_modulo gbm_3b_struct_only 0.495936 0.050085 0.744359                                    
+    TEM1_Deng2012             full_assay   esm2_3b_zeroshot 0.460743      NaN 0.735155                                    
+    TEM1_Deng2012             cv5_modulo         gbm_3b_seq 0.473567 0.059550 0.738641 folds=0.528,0.401,0.415,0.552,0.472
+    TEM1_Deng2012             cv5_modulo        gbm_3b_dual 0.428260 0.057522 0.717770 folds=0.456,0.410,0.335,0.510,0.430
+    TEM1_Deng2012             cv5_modulo gbm_3b_struct_only 0.156092 0.073943 0.575452                                    
+TEM1_Firnberg2014             full_assay   esm2_3b_zeroshot 0.572852      NaN 0.794829                                    
+TEM1_Firnberg2014             cv5_modulo         gbm_3b_seq 0.641327 0.035055 0.831481 folds=0.690,0.606,0.599,0.642,0.669
+TEM1_Firnberg2014             cv5_modulo        gbm_3b_dual 0.726719 0.036926 0.865193 folds=0.728,0.676,0.695,0.761,0.773
+TEM1_Firnberg2014             cv5_modulo gbm_3b_struct_only 0.504333 0.047385 0.741099                                    
+    VIM2_Chen2020             full_assay   esm2_3b_zeroshot 0.711723      NaN 0.891170                                    
+    VIM2_Chen2020             cv5_modulo         gbm_3b_seq 0.716017 0.028100 0.896229 folds=0.729,0.703,0.673,0.717,0.758
+    VIM2_Chen2020             cv5_modulo        gbm_3b_dual 0.775472 0.037062 0.928369 folds=0.770,0.769,0.720,0.782,0.837
+    VIM2_Chen2020             cv5_modulo gbm_3b_struct_only 0.614461 0.047875 0.839084                                    
+AAC3I_Dandage2018             full_assay   esm2_3b_zeroshot 0.507370      NaN 0.752253                                    
+AAC3I_Dandage2018             cv5_modulo         gbm_3b_seq 0.508620 0.054266 0.759839 folds=0.541,0.502,0.594,0.451,0.454
+AAC3I_Dandage2018             cv5_modulo        gbm_3b_dual 0.491408 0.057188 0.756357 folds=0.549,0.529,0.530,0.448,0.401
+AAC3I_Dandage2018             cv5_modulo gbm_3b_struct_only 0.146340 0.099446 0.576740                                    
+    TEM1_Deng2012 external_from_Stiffler        gbm_3b_dual 0.526908      NaN 0.777469                                    
+TEM1_Firnberg2014 external_from_Stiffler        gbm_3b_dual 0.827603      NaN 0.925621                                    
+saved repository/code/../results/esm2_3b_evaluation.csv
+
+STATUS OK  (32.9 s)
+
+==============================================================================
+RUN 16_anchor_counterfactual.py
+TEM1_Stiffler2015 8m seq 0.537 | dual 0.696 (+0.159) | no-anchors 0.696 (+0.159)
+TEM1_Stiffler2015 650m seq 0.758 | dual 0.814 (+0.056) | no-anchors 0.808 (+0.050)
+VIM2_Chen2020 8m seq 0.506 | dual 0.729 (+0.223) | no-anchors 0.741 (+0.234)
+VIM2_Chen2020 650m seq 0.744 | dual 0.795 (+0.051) | no-anchors 0.789 (+0.045)
+APH3II_Melnikov2014 8m seq 0.375 | dual 0.643 (+0.268) | no-anchors 0.576 (+0.201)
+APH3II_Melnikov2014 650m seq 0.642 | dual 0.710 (+0.068) | no-anchors 0.691 (+0.050)
+DHFR_Nguyen2023 8m seq 0.281 | dual 0.302 (+0.020) | no-anchors 0.347 (+0.066)
+DHFR_Nguyen2023 650m seq 0.536 | dual 0.511 (+-0.025) | no-anchors 0.501 (+-0.035)
+saved repository/code/../results/anchor_counterfactual.csv
+
+STATUS OK  (33.4 s)
+
+==============================================================================
+RUN 17_contiguous_cv.py
+TEM1_Stiffler2015 seq 0.763 +/- 0.065 (AUC 0.901)
+TEM1_Stiffler2015 struct 0.469 +/- 0.029 (AUC 0.732)
+TEM1_Stiffler2015 dual 0.800 +/- 0.044 (AUC 0.921)
+VIM2_Chen2020 seq 0.695 +/- 0.165 (AUC 0.900)
+VIM2_Chen2020 struct 0.516 +/- 0.129 (AUC 0.801)
+VIM2_Chen2020 dual 0.744 +/- 0.114 (AUC 0.926)
+saved repository/code/../results/contiguous_cv_650m.csv
+
+STATUS OK  (8.5 s)
+
+==============================================================================
+RUN 20_random_anchor_null.py
+(a) collinearity done
+(b) paired tests done
+(c) random-anchor null done
+              assay backbone  rand_mean  rand_max     true
+APH3II_Melnikov2014     650m   0.698543  0.706957 0.709821
+APH3II_Melnikov2014       8m   0.617362  0.629693 0.643180
+    DHFR_Nguyen2023     650m   0.558863  0.571667 0.510762
+    DHFR_Nguyen2023       8m   0.402692  0.433484 0.301569
+  TEM1_Stiffler2015     650m   0.802744  0.808394 0.814057
+  TEM1_Stiffler2015       8m   0.685589  0.699988 0.696263
+      VIM2_Chen2020     650m   0.791372  0.804340 0.795192
+      VIM2_Chen2020       8m   0.734403  0.745905 0.729260
+(d) permutation importance done
+
+STATUS OK  (105.5 s)
+
+==============================================================================
+RUN 23_build_delta_rho_table.py
+v   DHFR_Nguyen2023        8m    dual   calc=0.3015693439  arch=0.3015693439  PASS
+  expanded_proteins_650m_evaluation. APH3II_Melnikov2014    650m  seq    calc=0.6418181183  arch=0.6418181183  PASS
+  expanded_proteins_650m_evaluation. APH3II_Melnikov2014    650m  struct  calc=0.5625130376  arch=0.5625130376  PASS
+  expanded_proteins_650m_evaluation. APH3II_Melnikov2014    650m  dual   calc=0.7098212689  arch=0.7098212689  PASS
+  expanded_proteins_650m_evaluation. DHFR_Nguyen2023        650m  seq    calc=0.5355407605  arch=0.5355407605  PASS
+  expanded_proteins_650m_evaluation. DHFR_Nguyen2023        650m  struct  calc=0.2341904269  arch=0.2341904269  PASS
+  expanded_proteins_650m_evaluation. DHFR_Nguyen2023        650m  dual   calc=0.5107624373  arch=0.5107624373  PASS
+  esm2_650m_evaluation.csv           TEM1_Stiffler2015      650m  seq    calc=0.7576581752  arch=0.7576581752  PASS
+  esm2_650m_evaluation.csv           TEM1_Stiffler2015      650m  dual   calc=0.8140568747  arch=0.8140568747  PASS
+  esm2_650m_evaluation.csv           TEM1_Stiffler2015      650m  struct  calc=0.4959360494  arch=0.4959360494  PASS
+  esm2_650m_evaluation.csv           VIM2_Chen2020          650m  seq    calc=0.7443891609  arch=0.7443891609  PASS
+  esm2_650m_evaluation.csv           VIM2_Chen2020          650m  dual   calc=0.7951921422  arch=0.7951921422  PASS
+  esm2_650m_evaluation.csv           VIM2_Chen2020          650m  struct  calc=0.6144611046  arch=0.6144611046  PASS
+  esm2_650m_evaluation.csv           AAC3I_Dandage2018      650m  seq    calc=0.4767475366  arch=0.4767475366  PASS
+  esm2_650m_evaluation.csv           AAC3I_Dandage2018      650m  dual   calc=0.4464682887  arch=0.4464682887  PASS
+  esm2_650m_evaluation.csv           AAC3I_Dandage2018      650m  struct  calc=0.1463397836  arch=0.1463397836  PASS
+  esm2_3b_evaluation.csv             TEM1_Stiffler2015      3b    seq    calc=0.6520618561  arch=0.6520618561  PASS
+  esm2_3b_evaluation.csv             TEM1_Stiffler2015      3b    dual   calc=0.7345733856  arch=0.7345733856  PASS
+  esm2_3b_evaluation.csv             TEM1_Stiffler2015      3b    struct  calc=0.4959360494  arch=0.4959360494  PASS
+  esm2_3b_evaluation.csv             VIM2_Chen2020          3b    seq    calc=0.7160171359  arch=0.7160171359  PASS
+  esm2_3b_evaluation.csv             VIM2_Chen2020          3b    dual   calc=0.7754720222  arch=0.7754720222  PASS
+  esm2_3b_evaluation.csv             VIM2_Chen2020          3b    struct  calc=0.6144611046  arch=0.6144611046  PASS
+  esm2_3b_evaluation.csv             AAC3I_Dandage2018      3b    seq    calc=0.5086195246  arch=0.5086195246  PASS
+  esm2_3b_evaluation.csv             AAC3I_Dandage2018      3b    dual   calc=0.4914076350  arch=0.4914076350  PASS
+  esm2_3b_evaluation.csv             AAC3I_Dandage2018      3b    struct  calc=0.1463397836  arch=0.1463397836  PASS
+  核对总判: PASS
+--------------------------------------------------------------------------------------------------------
+与 paired_tests.csv（dual_vs_seq）交叉核对：
+  TEM1_Stiffler2015      8m     delta calc=0.15943716 arch=0.15943716 (d=8.3e-17) | p calc=5.174e-04 arch=5.174e-04 (d=8.7e-17)  PASS
+  TEM1_Stiffler2015      650m   delta calc=0.05639870 arch=0.05639870 (d=0.0e+00) | p calc=2.766e-03 arch=2.766e-03 (d=8.9e-17)  PASS
+  VIM2_Chen2020          8m     delta calc=0.22279350 arch=0.22279350 (d=8.3e-17) | p calc=8.332e-04 arch=8.332e-04 (d=9.7e-17)  PASS
+  VIM2_Chen2020          650m   delta calc=0.05080298 arch=0.05080298 (d=6.9e-18) | p calc=6.146e-03 arch=6.146e-03 (d=2.1e-17)  PASS
+  APH3II_Melnikov2014    8m     delta calc=0.26838307 arch=0.26838307 (d=0.0e+00) | p calc=1.005e-03 arch=1.005e-03 (d=4.4e-17)  PASS
+  APH3II_Melnikov2014    650m   delta calc=0.06800315 arch=0.06800315 (d=9.7e-17) | p calc=9.493e-03 arch=9.493e-03 (d=1.7e-18)  PASS
+  DHFR_Nguyen2023        8m     delta calc=0.02040144 arch=0.02040144 (d=2.8e-17) | p calc=6.996e-01 arch=6.996e-01 (d=0.0e+00)  PASS
+  DHFR_Nguyen2023        650m   delta calc=-0.02477832 arch=-0.02477832 (d=3.8e-17) | p calc=4.846e-01 arch=4.846e-01 (d=0.0e+00)  PASS
+  总判: PASS
+
+wrote delta_rho_table.csv (15 rows) & recomputed_folds_all_backbones.csv
+      label backbone    n  rho_seq  rho_dual     delta  sd_delta        p
+      TEM-1       3b 4996 0.652062  0.734573  0.082512  0.028833 0.004612
+      TEM-1     650m 4996 0.757658  0.814057  0.056399  0.017150 0.002766
+      TEM-1       8m 4996 0.536826  0.696263  0.159437  0.031214 0.000517
+      VIM-2       3b 5004 0.716017  0.775472  0.059455  0.013705 0.000971
+      VIM-2     650m 5004 0.744389  0.795192  0.050803  0.019222 0.006146
+      VIM-2       8m 5004 0.506466  0.729260  0.222794  0.049346 0.000833
+   AAC(3)-I       3b 1793 0.508620  0.491408 -0.017212  0.035145 0.382800
+   AAC(3)-I     650m 1793 0.476748  0.446468 -0.030279  0.058492 0.358997
+   AAC(3)-I       8m 1793 0.242895  0.251394  0.008499  0.075844 0.833646
+APH(3′)-IIa       3b 4960 0.683952  0.715806  0.031854  0.015908 0.016067
+APH(3′)-IIa     650m 4960 0.641818  0.709821  0.068003  0.029101 0.009493
+APH(3′)-IIa       8m 4960 0.374797  0.643180  0.268383  0.062423 0.001005
+       DHFR       3b 2916 0.525108  0.495692 -0.029416  0.063240 0.404883
+       DHFR     650m 2916 0.535541  0.510762 -0.024778  0.064415 0.484609
+       DHFR       8m 2916 0.281168  0.301569  0.020401  0.098361 0.699550
+
+========================================================================================================
+关键结论复算
+========================================================================================================
+  n>=4000 的 9 个组合：Δρ 全为正 = True；全部 p<0.05 = True
+  n<3000  的 6 个组合：Δρ 全为正 = False；全部 p<0.05 = False
+  assay 层面（n=5）Spearman(log n, Δρ) = 0.700, P = 0.188  ← 样本量太小，仅作趋势描述
+  backbone 8m   ：Δρ>0 的组合 5/5，正的 assay ['AAC(3)-I', 'APH(3′)-IIa', 'DHFR', 'TEM-1', 'VIM-2']
+  backbone 650m ：Δρ>0 的组合 3/5，正的 assay ['APH(3′)-IIa', 'TEM-1', 'VIM-2']
+  backbone 3b   ：Δρ>0 的组合 3/5，正的 assay ['APH(3′)-IIa', 'TEM-1', 'VIM-2']
+
+STATUS OK  (41.2 s)
+
+==============================================================================
+RUN 14_expand_proteins_eval.py
+                                 assay      protocol            model      rho  rho_std      auc                                note
+                   APH3II_Melnikov2014    full_assay esm2_8m_zeroshot 0.211863      NaN 0.631849                                    
+                   APH3II_Melnikov2014    cv5_modulo       gbm_8m_seq 0.374797 0.077413 0.714440 folds=0.479,0.390,0.255,0.422,0.327
+                   APH3II_Melnikov2014    cv5_modulo    gbm_8m_struct 0.562513 0.023664 0.817395 folds=0.593,0.582,0.559,0.554,0.525
+                   APH3II_Melnikov2014    cv5_modulo      gbm_8m_dual 0.643180 0.024347 0.865477 folds=0.668,0.668,0.629,0.647,0.604
+                       DHFR_Nguyen2023    full_assay esm2_8m_zeroshot 0.132777      NaN 0.564261                                    
+                       DHFR_Nguyen2023    cv5_modulo       gbm_8m_seq 0.281168 0.064472 0.725245 folds=0.218,0.376,0.209,0.271,0.331
+                       DHFR_Nguyen2023    cv5_modulo    gbm_8m_struct 0.234190 0.079451 0.711956 folds=0.385,0.228,0.205,0.150,0.203
+                       DHFR_Nguyen2023    cv5_modulo      gbm_8m_dual 0.301569 0.063612 0.791757 folds=0.362,0.342,0.344,0.192,0.268
+      TEM1_Stiffler2015->VIM2_Chen2020 cross_protein      gbm_8m_dual 0.714163      NaN      NaN                                    
+  TEM1_Stiffler2015->AAC3I_Dandage2018 cross_protein      gbm_8m_dual 0.246536      NaN      NaN                                    
+TEM1_Stiffler2015->APH3II_Melnikov2014 cross_protein      gbm_8m_dual 0.592360      NaN      NaN                                    
+    TEM1_Stiffler2015->DHFR_Nguyen2023 cross_protein      gbm_8m_dual 0.386851      NaN      NaN                                    
+      VIM2_Chen2020->TEM1_Stiffler2015 cross_protein      gbm_8m_dual 0.629376      NaN      NaN                                    
+      VIM2_Chen2020->AAC3I_Dandage2018 cross_protein      gbm_8m_dual 0.240457      NaN      NaN                                    
+    VIM2_Chen2020->APH3II_Melnikov2014 cross_protein      gbm_8m_dual 0.522313      NaN      NaN                                    
+        VIM2_Chen2020->DHFR_Nguyen2023 cross_protein      gbm_8m_dual 0.348324      NaN      NaN                                    
+  AAC3I_Dandage2018->TEM1_Stiffler2015 cross_protein      gbm_8m_dual 0.522399      NaN      NaN                                    
+      AAC3I_Dandage2018->VIM2_Chen2020 cross_protein      gbm_8m_dual 0.635227      NaN      NaN                                    
+AAC3I_Dandage2018->APH3II_Melnikov2014 cross_protein      gbm_8m_dual 0.468115      NaN      NaN                                    
+    AAC3I_Dandage2018->DHFR_Nguyen2023 cross_protein      gbm_8m_dual 0.290162      NaN      NaN                                    
+APH3II_Melnikov2014->TEM1_Stiffler2015 cross_protein      gbm_8m_dual 0.629242      NaN      NaN                                    
+    APH3II_Melnikov2014->VIM2_Chen2020 cross_protein      gbm_8m_dual 0.531085      NaN      NaN                                    
+APH3II_Melnikov2014->AAC3I_Dandage2018 cross_protein      gbm_8m_dual 0.216278      NaN      NaN                                    
+  APH3II_Melnikov2014->DHFR_Nguyen2023 cross_protein      gbm_8m_dual 0.246381      NaN      NaN                                    
+    DHFR_Nguyen2023->TEM1_Stiffler2015 cross_protein      gbm_8m_dual 0.591296      NaN      NaN                                    
+        DHFR_Nguyen2023->VIM2_Chen2020 cross_protein      gbm_8m_dual 0.419837      NaN      NaN                                    
+    DHFR_Nguyen2023->AAC3I_Dandage2018 cross_protein      gbm_8m_dual 0.205847      NaN      NaN                                    
+  DHFR_Nguyen2023->APH3II_Melnikov2014 cross_protein      gbm_8m_dual 0.469805      NaN      NaN                                    
+saved repository/code/../results/expanded_proteins_evaluation.csv
+
+STATUS OK  (9.1 s)
+
+==============================================================================
+RUN 15_expand_proteins_650m_eval.py
+TEM1_Stiffler2015 (4996, 17)
+VIM2_Chen2020 (5004, 17)
+AAC3I_Dandage2018 (1793, 15)
+APH3II_Melnikov2014 (4960, 16)
+DHFR_Nguyen2023 (2916, 16)
+                                 assay      protocol              model      rho  rho_std      auc                                note
+                   APH3II_Melnikov2014    full_assay esm2_650m_zeroshot 0.601436      NaN 0.844029                                    
+                   APH3II_Melnikov2014    cv5_modulo       gbm_650m_seq 0.641818 0.048820 0.855812 folds=0.642,0.698,0.596,0.694,0.579
+                   APH3II_Melnikov2014    cv5_modulo    gbm_650m_struct 0.562513 0.023664 0.817395 folds=0.593,0.582,0.559,0.554,0.525
+                   APH3II_Melnikov2014    cv5_modulo      gbm_650m_dual 0.709821 0.026356 0.899619 folds=0.733,0.728,0.693,0.729,0.666
+                       DHFR_Nguyen2023    full_assay esm2_650m_zeroshot 0.544218      NaN 0.886307                                    
+                       DHFR_Nguyen2023    cv5_modulo       gbm_650m_seq 0.535541 0.078838 0.870827 folds=0.649,0.577,0.558,0.439,0.454
+                       DHFR_Nguyen2023    cv5_modulo    gbm_650m_struct 0.234190 0.079451 0.711956 folds=0.385,0.228,0.205,0.150,0.203
+                       DHFR_Nguyen2023    cv5_modulo      gbm_650m_dual 0.510762 0.128922 0.882157 folds=0.645,0.543,0.643,0.333,0.389
+      TEM1_Stiffler2015->VIM2_Chen2020 cross_protein      gbm_650m_dual 0.772772      NaN      NaN                                    
+  TEM1_Stiffler2015->AAC3I_Dandage2018 cross_protein      gbm_650m_dual 0.446252      NaN      NaN                                    
+TEM1_Stiffler2015->APH3II_Melnikov2014 cross_protein      gbm_650m_dual 0.634003      NaN      NaN                                    
+    TEM1_Stiffler2015->DHFR_Nguyen2023 cross_protein      gbm_650m_dual 0.523510      NaN      NaN                                    
+      VIM2_Chen2020->TEM1_Stiffler2015 cross_protein      gbm_650m_dual 0.769176      NaN      NaN                                    
+      VIM2_Chen2020->AAC3I_Dandage2018 cross_protein      gbm_650m_dual 0.495204      NaN      NaN                                    
+    VIM2_Chen2020->APH3II_Melnikov2014 cross_protein      gbm_650m_dual 0.669895      NaN      NaN                                    
+        VIM2_Chen2020->DHFR_Nguyen2023 cross_protein      gbm_650m_dual 0.482209      NaN      NaN                                    
+  AAC3I_Dandage2018->TEM1_Stiffler2015 cross_protein      gbm_650m_dual 0.738180      NaN      NaN                                    
+      AAC3I_Dandage2018->VIM2_Chen2020 cross_protein      gbm_650m_dual 0.736254      NaN      NaN                                    
+AAC3I_Dandage2018->APH3II_Melnikov2014 cross_protein      gbm_650m_dual 0.652010      NaN      NaN                                    
+    AAC3I_Dandage2018->DHFR_Nguyen2023 cross_protein      gbm_650m_dual 0.506193      NaN      NaN                                    
+APH3II_Melnikov2014->TEM1_Stiffler2015 cross_protein      gbm_650m_dual 0.731998      NaN      NaN                                    
+    APH3II_Melnikov2014->VIM2_Chen2020 cross_protein      gbm_650m_dual 0.744409      NaN      NaN                                    
+APH3II_Melnikov2014->AAC3I_Dandage2018 cross_protein      gbm_650m_dual 0.416429      NaN      NaN                                    
+  APH3II_Melnikov2014->DHFR_Nguyen2023 cross_protein      gbm_650m_dual 0.410118      NaN      NaN                                    
+    DHFR_Nguyen2023->TEM1_Stiffler2015 cross_protein      gbm_650m_dual 0.695667      NaN      NaN                                    
+        DHFR_Nguyen2023->VIM2_Chen2020 cross_protein      gbm_650m_dual 0.490661      NaN      NaN                                    
+    DHFR_Nguyen2023->AAC3I_Dandage2018 cross_protein      gbm_650m_dual 0.331153      NaN      NaN                                    
+  DHFR_Nguyen2023->APH3II_Melnikov2014 cross_protein      gbm_650m_dual 0.514189      NaN      NaN                                    
+saved repository/code/../results/expanded_proteins_650m_evaluation.csv
+
+STATUS OK  (9.0 s)
+
+==============================================================================
+RUN 21_expand_proteins_3b_eval.py
+APH3II_Melnikov2014 3b seq: rho 0.684 +/- 0.035 (AUC 0.879)
+APH3II_Melnikov2014 3b struct: rho 0.563 +/- 0.024 (AUC 0.817)
+APH3II_Melnikov2014 3b dual: rho 0.716 +/- 0.023 (AUC 0.904)
+DHFR_Nguyen2023 3b seq: rho 0.525 +/- 0.076 (AUC 0.873)
+DHFR_Nguyen2023 3b struct: rho 0.234 +/- 0.079 (AUC 0.712)
+DHFR_Nguyen2023 3b dual: rho 0.496 +/- 0.130 (AUC 0.884)
+wrote results/expanded_proteins_3b_evaluation.csv
+
+STATUS OK  (7.2 s)
+
+==============================================================================
+RUN 06_extended_gcn_ramp.py
+seed 0 epoch  5: train rho 0.626 | test rho 0.574
+seed 0 epoch 15: train rho 0.743 | test rho 0.628
+seed 0 epoch 25: train rho 0.760 | test rho 0.635
+seed 0 epoch 35: train rho 0.779 | test rho 0.660
+seed 0 epoch 45: train rho 0.784 | test rho 0.665
+seed 0 epoch 60: train rho 0.791 | test rho 0.659
+seed 1 epoch  5: train rho 0.412 | test rho 0.397
+seed 1 epoch 15: train rho 0.748 | test rho 0.655
+seed 1 epoch 25: train rho 0.765 | test rho 0.678
+seed 1 epoch 35: train rho 0.777 | test rho 0.667
+seed 1 epoch 45: train rho 0.782 | test rho 0.675
+seed 1 epoch 60: train rho 0.792 | test rho 0.677
+seed 2 epoch  5: train rho 0.503 | test rho 0.520
+seed 2 epoch 15: train rho 0.748 | test rho 0.656
+seed 2 epoch 25: train rho 0.770 | test rho 0.668
+seed 2 epoch 35: train rho 0.779 | test rho 0.645
+seed 2 epoch 45: train rho 0.783 | test rho 0.640
+seed 2 epoch 60: train rho 0.796 | test rho 0.657
+wrote ../results/gcn_extended_ramp.csv
+
+STATUS OK  (217.5 s)
+
+==============================================================================
+RUN 07_mlp_ablation.py
+seed 0: MLP ablation (25 epochs, fold 0): train rho 0.906 | test rho 0.558
+seed 1: MLP ablation (25 epochs, fold 0): train rho 0.905 | test rho 0.566
+seed 2: MLP ablation (25 epochs, fold 0): train rho 0.901 | test rho 0.547
+wrote ../results/mlp_ablation.csv
+
+STATUS OK  (89.2 s)
+
+==============================================================================
+RUN 08_naive_gat_5fold.py
+seed 0 fold 0: naive GAT rho 0.054 AUC 0.510
+seed 0 fold 1: naive GAT rho 0.405 AUC 0.716
+seed 0 fold 2: naive GAT rho 0.131 AUC 0.566
+seed 0 fold 3: naive GAT rho 0.502 AUC 0.754
+seed 0 fold 4: naive GAT rho 0.485 AUC 0.777
+seed 0: 5-fold mean 0.315 +/- 0.187
+seed 1 fold 0: naive GAT rho 0.264 AUC 0.645
+seed 1 fold 1: naive GAT rho 0.427 AUC 0.728
+seed 1 fold 2: naive GAT rho 0.291 AUC 0.637
+seed 1 fold 3: naive GAT rho 0.277 AUC 0.648
+seed 1 fold 4: naive GAT rho 0.572 AUC 0.799
+seed 1: 5-fold mean 0.366 +/- 0.118
+seed 2 fold 0: naive GAT rho 0.396 AUC 0.706
+seed 2 fold 1: naive GAT rho 0.226 AUC 0.626
+seed 2 fold 2: naive GAT rho 0.327 AUC 0.684
+seed 2 fold 3: naive GAT rho 0.610 AUC 0.816
+seed 2 fold 4: naive GAT rho 0.530 AUC 0.793
+seed 2: 5-fold mean 0.418 +/- 0.138
+naive GAT all runs (n=15): 0.366 +/- 0.156; AUC 0.694 +/- 0.086
+wrote ../results/naive_gat_5fold.csv
+
+STATUS OK  (107.8 s)
+
+==============================================================================
+RUN 03_gcnv2.py
+  TEM-1 fold 0: GCNv2 0.6643 | GBM 0.6686
+  TEM-1 fold 1: GCNv2 0.6616 | GBM 0.6480
+  TEM-1 fold 2: GCNv2 0.7087 | GBM 0.7199
+  TEM-1 fold 3: GCNv2 0.7291 | GBM 0.7235
+  TEM-1 fold 4: GCNv2 0.7419 | GBM 0.7212
+TEM-1: GCNv2 0.7011 +/- 0.0329 | GBM 0.6963 +/- 0.0317 | paired t p = 0.4481
+saved -> ../results/gcnv2_5fold_cv.csv
+  VIM-2 fold 0: GCNv2 0.7603 | GBM 0.7751
+  VIM-2 fold 1: GCNv2 0.7346 | GBM 0.7098
+  VIM-2 fold 2: GCNv2 0.7183 | GBM 0.6807
+  VIM-2 fold 3: GCNv2 0.7050 | GBM 0.6735
+  VIM-2 fold 4: GCNv2 0.7953 | GBM 0.8072
+VIM-2: GCNv2 0.7427 +/- 0.0321 | GBM 0.7293 +/- 0.0530 | paired t p = 0.2939
+saved -> ../results/vim2_gcnv2_5fold_cv.csv
+
+STATUS OK  (387.9 s)

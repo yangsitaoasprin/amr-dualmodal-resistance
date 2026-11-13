@@ -1,0 +1,15 @@
+# Core scientific stack -- sufficient to reproduce every table and figure in the
+# manuscript from the shipped feature tables (CPU only, no GPU needed).
+numpy>=2.0,<3
+pandas>=2.2,<3
+scipy>=1.13,<2
+scikit-learn>=1.4,<2
+matplotlib>=3.8,<4
+biopython>=1.83,<2
+
+# Optional: only needed to recompute ESM-2 embeddings / zero-shot scores
+# (scripts 09*, 13, and the 650M/3B evaluation inputs). Pre-computed scores are
+# shipped in results/, so the manuscript numbers do not require these.
+# torch>=2.2
+# fair-esm>=2.0
+

@@ -8,7 +8,13 @@ Model: sklearn GradientBoostingRegressor with default hyperparameters
 (n_estimators=100, learning_rate=0.1, max_depth=3), the configuration used
 in the manuscript.
 
-Reproduces Tables 1, 3, 4.
+Coverage: this script is the 8M entry point for the three core assays and
+prints the 8M rows of Tables 1 and 3 (TEM-1, VIM-2, AAC(3)-I) plus six of the
+twenty Table 4 transfer cells.  The remaining rows are produced elsewhere:
+  10_esm2_backbone_eval.py  650M / 3B blocks of Tables 1-3
+  22_verify_and_dump.py     per-fold dump, pooled out-of-fold predictions
+  14/15/21_expand_proteins*  APH(3')-IIa and DHFR (all backbones, Tables 3-4)
+  23_build_delta_rho_table  dual-minus-sequence delta-rho table
 """
 import numpy as np
 import pandas as pd
@@ -71,12 +77,18 @@ def main():
     # ---- cross-protein transfer (Table 4) ----
     # beta-lactamase <-> beta-lactamase: full 9-feature space with the
     # VIM-2 anchor columns renamed onto the TEM-1 names (d_act->d_s70,
-    # d_loop->d_omega). Transfers involving AAC(3)-I use the 7-feature
-    # anchor-free space (sequence features + pLDDT + contact_num),
-    # since AAC(3)-I has no catalytic anchor.
+    # d_loop->d_omega).
+    # AAC(3)-I has no encoded catalytic anchor, so it cannot supply distances:
+    #   * AAC(3)-I as the TEST protein  -> its two distance features are set to
+    #     0.0 and the trainer's 9-feature space is kept (the protocol of Table 4,
+    #     identical to 10_esm2_backbone_eval.py, 14_ and 15_expand_proteins*).
+    #   * AAC(3)-I as the TRAINER       -> the 7 anchor-free features on both
+    #     sides (sequence features + pLDDT + contact_num).
     vim2_ren = vim2.rename(columns={"d_act": "d_s70", "d_loop": "d_omega"})
     full = FEATS_SEQ + ["pLDDT", "contact_num", "d_s70", "d_omega"]
     common = FEATS_SEQ + ["pLDDT", "contact_num"]
+    aac_zero = aac.copy()
+    aac_zero[["d_s70", "d_omega"]] = 0.0
 
     def transfer(dtr, dte, ftr, fte):
         m = make_model()
@@ -87,8 +99,8 @@ def main():
     print("VIM-2 -> TEM-1", round(transfer(vim2_ren, tem1, full, full), 3))
     print("AAC(3)-I -> TEM-1", round(transfer(aac, tem1, common, common), 3))
     print("AAC(3)-I -> VIM-2", round(transfer(aac, vim2, common, common), 3))
-    print("TEM-1 -> AAC(3)-I", round(transfer(tem1, aac, common, common), 3))
-    print("VIM-2 -> AAC(3)-I", round(transfer(vim2, aac, common, common), 3))
+    print("TEM-1 -> AAC(3)-I", round(transfer(tem1, aac_zero, full, full), 3))
+    print("VIM-2 -> AAC(3)-I", round(transfer(vim2_ren, aac_zero, full, full), 3))
 
 
 if __name__ == "__main__":

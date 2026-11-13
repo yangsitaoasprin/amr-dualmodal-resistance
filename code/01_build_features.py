@@ -7,8 +7,19 @@ for a resistance protein from (i) a ProteinGym DMS substitution assay and
 Output columns:
   mutant, mutated_sequence, DMS_score, DMS_score_bin, wt, pos, mut,
   esm2, blosum62, d_hydro, d_vol, d_chg, pLDDT, contact_num, d_s70, d_omega
+
+Scope: the functions below are generic (any ProteinGym substitution assay +
+any AlphaFold DB model, anchors as arguments).  The executable __main__ block
+builds the TEM-1 example only; the rest of the cohort is built by
+  11_expand_proteins.py                   # APH(3')-IIa, DHFR assays
+  12_new_proteins_struct_features.py      # structural features, expansion proteins
+  13_new_proteins_esm2_8m.py              # ESM-2 8M scores, expansion proteins
 (VIM-2 uses d_act/d_loop for the residue-64 and loop-region anchors;
 AAC(3)-I lacks catalytic anchors -> structural features are pLDDT, contact_num only.)
+
+Anchors: canonical TEM-1 caliber is catalytic Ser 68 and omega-loop 162-177
+(UniProt P62593 ACT_SITE).  The superfamily/ABL numbering 70 and 163-178 is an
+older caliber, retained only in data/_backup_anchor70_*.csv.
 
 Dependencies: fair-esm (esm2_t6_8M_UR50D), biopython, pandas, numpy, requests
 """
@@ -84,13 +95,16 @@ class ESM2Scorer:
         bc = self.alphabet.get_batch_converter()
         self.toks = bc([("wt", wt_seq)])[2].to(device)
         self.L = len(wt_seq)
-        # cache full-sequence log-softmax once (marginals approx. used per site)
-        with torch.no_grad():
-            self.base = torch.log_softmax(
-                self.model(self.toks)["logits"][0], -1)  # (L+2, vocab)
 
     def score(self, pos1, wt_aa, mut_aa):
-        """logP(mut | masked pos) - logP(wt | masked pos), 1-based pos."""
+        """logP(mut | masked pos) - logP(wt | masked pos), 1-based pos.
+
+        One forward pass per call, with only `pos1` masked.  Because the mask
+        touches a single site, calling this once per variant at the same
+        position is mathematically identical to a single per-position pass
+        (the 650M implementation, 09_esm2_650m_zeroshot.py, takes the latter
+        route); the difference is only the number of forward passes.
+        """
         with self.torch.no_grad():
             t = self.toks.clone()
             t[0, pos1] = self.alphabet.mask_idx  # BOS offset already in pos1
@@ -138,15 +152,29 @@ def build_table(dms_csv, wt_seq, struct_rows, scorer, out_csv,
 
 
 if __name__ == "__main__":
-    # ---- TEM-1 example (UniProt P62593, catalytic Ser70, omega-loop 163-178)
-    download_af_structure("P62593", "AF-P62593-F1-model.pdb")
-    plddt, cb = parse_structure("AF-P62593-F1-model.pdb")
-    srows = structural_features(plddt, cb, catalytic_ser=70,
-                                loop_range=(163, 179))
-    wt_seq = "".join(open("P62593_TEM1.fasta").read().split("\n")[1:])
+    # ---- TEM-1 example (UniProt P62593).
+    # Canonical anchors: catalytic Ser 68, omega-loop 162-177.  The loop is
+    # consumed as range(*loop_range), which is right-open, hence (162, 178).
+    # All paths are anchored on this file, so the block runs from any cwd
+    # (it previously required cwd == <project>/data).
+    from pathlib import Path
+    # Write next to the tables the rest of the pipeline reads (repository/data).
+    # parents[1] is the repository root; parents[2] would be the project root,
+    # which holds an old offset-anchor copy of these tables.
+    DATA = Path(__file__).resolve().parents[1] / "data"
+    pdb = DATA / "AF-P62593-F1-model.pdb"
+    if not pdb.exists():                       # keep the shipped model intact
+        download_af_structure("P62593", pdb)
+    plddt, cb = parse_structure(str(pdb))
+    srows = structural_features(plddt, cb, catalytic_ser=68,
+                                loop_range=(162, 178))
+    wt_seq = "".join((DATA / "P62593_TEM1.fasta").read_text().split("\n")[1:])
     scorer = ESM2Scorer(wt_seq)
-    np.save("tem1_esm2_emb.npy", scorer.embeddings())
-    build_table("DMS_subst/BLAT_ECOLX_Stiffler_2015.csv", wt_seq, srows, scorer,
-                "tem1_stiffler_modeling_table.csv")
-    # VIM-2: anchor residue 64; use names=('d_act','d_loop') and the VIM-2 loop range.
-    # AAC(3)-I: no catalytic anchor -> catalytic_ser=None, loop_range=None.
+    np.save(DATA / "tem1_esm2_emb.npy", scorer.embeddings())
+    build_table(DATA / "DMS_subst" / "DMS_ProteinGym_substitutions"
+                     / "BLAT_ECOLX_Stiffler_2015.csv",
+                wt_seq, srows, scorer,
+                DATA / "tem1_stiffler_modeling_table.csv")
+    # Other cohort proteins (see 11/12/13_*.py): VIM-2 anchors residue 64 and
+    # uses names=('d_act', 'd_loop'); AAC(3)-I has no catalytic anchor ->
+    # catalytic_ser=None, loop_range=None (pLDDT + contact_num only).

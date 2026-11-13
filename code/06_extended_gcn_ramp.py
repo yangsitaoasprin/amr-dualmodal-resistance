@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 06_extended_gcn_ramp.py — Extended-training 2-layer GCN on the TEM-1 Cbeta
-contact graph, fold 0, up to 60 epochs (Figure 3a "extended GCN" curve).
+contact graph, fold 0, up to 60 epochs (the "extended GCN" curve inside
+Figure 4a).
 
 Architecture: a *plain* 2-layer GCN (no skip connection / passthrough /
 dropout -- those are the GCNv2 fixes of 03_gcnv2.py), hidden width 64,

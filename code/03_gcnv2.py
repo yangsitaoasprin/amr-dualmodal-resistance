@@ -14,7 +14,17 @@ Node features (per sample, n_res x 329):
 
 Protocol per fold: 30 epochs = 10 @ lr 2e-3 + 10 @ 1e-3 + 10 @ 5e-4,
 batch 64, full training split; identical modulo 5-fold by-position CV as the GBM.
-Reproduces Tables 5-6 and Figure 3b. CPU-only, ~1 min per fold.
+Reproduces Tables 5-6 and Figure 4a,b (Figure 3b is produced by 43_fig3_external_benchmark.py).
+CPU-only, ~40 s per fold.
+
+Reproducibility.  A single fixed seed (0) governs weight initialisation,
+shuffling and subsampling; the per-fold CSVs under results/ are the run of
+record.  CPU matrix reductions depend on thread count and BLAS build, so
+fold-level rho moves by up to ~0.004 and the paired-t P by up to ~0.07 between
+environments (measured on one machine: P = 0.448 for the shipped run, 0.512 on
+a repeat, 0.518 with threads pinned to 1).  The parity conclusion is unchanged
+in all three; Tables 5-6 therefore report this single-seed run, not a
+three-seed mean, and the tables state so explicitly.
 """
 import numpy as np
 import pandas as pd
@@ -118,7 +128,8 @@ def train_fold(A_norm, df_tr, df_te, emb, struct4, tab_cols):
     return spearmanr(pred, df_te["DMS_score"]).statistic
 
 
-def run(csv, emb_npy, pdb, tab_cols, struct_cols, label, struct_csv=None):
+def run(csv, emb_npy, pdb, tab_cols, struct_cols, label, struct_csv=None,
+        out_csv=None):
     df = pd.read_csv(csv)
     emb = np.load(emb_npy).astype(np.float32)
     if struct_csv is not None:
@@ -141,17 +152,23 @@ def run(csv, emb_npy, pdb, tab_cols, struct_cols, label, struct_csv=None):
         gbm.fit(dtr[tab_cols], dtr["DMS_score"])
         b = spearmanr(gbm.predict(dte[tab_cols]), dte["DMS_score"]).statistic
         g_rhos.append(r); b_rhos.append(b)
-        print(f"  {label} fold {f}: GCNv2 {r:.3f} | GBM {b:.3f}", flush=True)
+        print(f"  {label} fold {f}: GCNv2 {r:.4f} | GBM {b:.4f}", flush=True)
     g, b = np.array(g_rhos), np.array(b_rhos)
     t = ttest_rel(g, b)
-    print(f"{label}: GCNv2 {g.mean():.3f} +/- {g.std():.3f} | "
-          f"GBM {b.mean():.3f} +/- {b.std():.3f} | paired t p = {t.pvalue:.3f}")
+    print(f"{label}: GCNv2 {g.mean():.4f} +/- {g.std():.4f} | "
+          f"GBM {b.mean():.4f} +/- {b.std():.4f} | paired t p = {t.pvalue:.4f}")
+    if out_csv is not None:
+        pd.DataFrame({"fold": range(5), "GCNv2_rho": g, "GBM_rho": b}
+                     ).to_csv(out_csv, index=False)
+        print(f"saved -> {out_csv}")
     return g, b
 
 
 if __name__ == "__main__":
     run("../data/tem1_stiffler_modeling_table.csv", "../data/tem1_esm2_emb.npy",
         "../data/AF-P62593-F1-model.pdb", TAB_TEM1, STRUCT_TEM1, "TEM-1",
-        struct_csv="../data/tem1_structural_features.csv")
+        struct_csv="../data/tem1_structural_features.csv",
+        out_csv="../results/gcnv2_5fold_cv.csv")
     run("../data/vim2_modeling_table.csv", "../data/vim2_esm2_emb.npy",
-        "../data/AF-A4GRB6-F1-model.pdb", TAB_VIM2, STRUCT_VIM2, "VIM-2")
+        "../data/AF-A4GRB6-F1-model.pdb", TAB_VIM2, STRUCT_VIM2, "VIM-2",
+        out_csv="../results/vim2_gcnv2_5fold_cv.csv")

@@ -2,14 +2,16 @@
 """
 08_naive_gat_5fold.py — Naive GATv2 on the TEM-1 contact graph under the
 full modulo 5-fold by-position CV with the CPU-realistic budget of
-3 epochs x 1,200 samples per fold (paper "naive GAT" number, Figure 3c).
+3 epochs x 1,200 samples per fold (paper "naive GAT" number, given as the
+reference line inside Figure 4a and as the GATv2 row of Table 1).
 
 Architecture and graph are identical to 05_gat_extended.py (two GATv2-style
 attention layers, hidden 32, 2 heads, mean+max readout, MLP head). For each
 (seed, fold) the model is re-initialised (seed * 10 + fold) and trained on
 the 4,000-sample training split with a 1,200-sample subsample per epoch.
 Three fixed seeds (0, 1, 2) are run for reproducibility; the paper reports
-the mean +/- std across the resulting 15 (seed, fold) runs.
+the mean +/- SD across the resulting 15 (seed, fold) runs, with the SD taken as a
+population SD (ddof=0) to match every other SD reported in the paper.
 Pure PyTorch, CPU-only. Writes ../results/naive_gat_5fold.csv.
 """
 import importlib.util
@@ -19,6 +21,7 @@ import pandas as pd
 import torch
 import torch.nn.functional as F
 from scipy.stats import spearmanr
+from sklearn.metrics import roc_auc_score
 
 spec = importlib.util.spec_from_file_location("gat_ext", "05_gat_extended.py")
 gat = importlib.util.module_from_spec(spec)
@@ -38,6 +41,7 @@ def train_fold(seed, fold_id, mask, base, dtr, dte):
     pos_te = torch.tensor(dte["pos"].values - 1)
     ytr = torch.tensor(dtr["DMS_score"].values, dtype=torch.float32)
     yte = dte["DMS_score"].values
+    yte_bin = dte["DMS_score_bin"].values
     model = gat.NaiveGAT()
     opt = torch.optim.Adam(model.parameters(), lr=2e-3)
     for _ in range(3):  # CPU-realistic budget: 3 epochs x 1,200 samples
@@ -55,7 +59,9 @@ def train_fold(seed, fold_id, mask, base, dtr, dte):
             sl = slice(s, s + 200)
             preds.append(model(gat.assemble(base, mut_te[sl], pos_te[sl]),
                                mask).numpy())
-    return spearmanr(np.concatenate(preds), yte).statistic
+    pred = np.concatenate(preds)
+    return (spearmanr(pred, yte).statistic,
+            roc_auc_score(yte_bin, pred))
 
 
 def main():
@@ -76,18 +82,21 @@ def main():
         for f in range(5):
             dtr = df[fold != f].reset_index(drop=True)
             dte = df[fold == f].reset_index(drop=True)
-            r = train_fold(seed, f, mask, base, dtr, dte)
+            r, a = train_fold(seed, f, mask, base, dtr, dte)
             rhos.append(r)
-            rows.append({"seed": seed, "fold": f, "rho": r})
-            print(f"seed {seed} fold {f}: naive GAT rho {r:.3f}", flush=True)
+            rows.append({"seed": seed, "fold": f, "rho": r, "auc": a})
+            print(f"seed {seed} fold {f}: naive GAT rho {r:.3f} AUC {a:.3f}", flush=True)
         rhos = np.array(rhos)
         print(f"seed {seed}: 5-fold mean {rhos.mean():.3f} +/- {rhos.std():.3f}",
               flush=True)
     out = pd.DataFrame(rows)
-    m, s = out["rho"].mean(), out["rho"].std()
-    print(f"naive GAT all runs (n=15): {m:.3f} +/- {s:.3f}")
-    out.loc[len(out)] = {"seed": "all", "fold": "mean", "rho": m}
-    out.loc[len(out)] = {"seed": "all", "fold": "std", "rho": s}
+    m, s = out["rho"].mean(), out["rho"].std(ddof=0)
+    ma, sa = out["auc"].mean(), out["auc"].std(ddof=0)
+    # ddof=0: population SD, the convention used for every other SD in the paper
+    # (44_fig4_gnn_cycle.py reads the "std" row, so its annotation follows this).
+    print(f"naive GAT all runs (n=15): {m:.3f} +/- {s:.3f}; AUC {ma:.3f} +/- {sa:.3f}")
+    out.loc[len(out)] = {"seed": "all", "fold": "mean", "rho": m, "auc": ma}
+    out.loc[len(out)] = {"seed": "all", "fold": "std", "rho": s, "auc": sa}
     out.to_csv("../results/naive_gat_5fold.csv", index=False)
     print("wrote ../results/naive_gat_5fold.csv")
 

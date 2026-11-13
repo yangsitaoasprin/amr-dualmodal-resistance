@@ -1,0 +1,17 @@
+assay,feat_x,feat_y,spearman
+TEM1_Stiffler2015,contact_num,d_s70,-0.622915019514393
+TEM1_Stiffler2015,contact_num,d_omega,-0.3011795531715452
+TEM1_Stiffler2015,d_s70,d_omega,0.7542602382105388
+TEM1_Stiffler2015,pLDDT,contact_num,0.6607830487131351
+VIM2_Chen2020,contact_num,d_s70,-0.4251061046201798
+VIM2_Chen2020,contact_num,d_omega,-0.4348213808953717
+VIM2_Chen2020,d_s70,d_omega,0.3035614461717129
+VIM2_Chen2020,pLDDT,contact_num,0.7551184170498029
+APH3II_Melnikov2014,contact_num,d_s70,-0.6631559468591944
+APH3II_Melnikov2014,contact_num,d_omega,-0.10309702549128862
+APH3II_Melnikov2014,d_s70,d_omega,0.45264395759384185
+APH3II_Melnikov2014,pLDDT,contact_num,0.5568324586339234
+DHFR_Nguyen2023,contact_num,d_s70,-0.29150693482772716
+DHFR_Nguyen2023,contact_num,d_omega,-0.21413529313566163
+DHFR_Nguyen2023,d_s70,d_omega,0.6788039002167201
+DHFR_Nguyen2023,pLDDT,contact_num,0.3425005199645391
