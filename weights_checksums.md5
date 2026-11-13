@@ -1,0 +1,11 @@
+# MD5 of the model weights used in this study; not redistributed here.
+# See WEIGHTS.md for provenance and upstream sources.
+07861d5df73124a876d7d7d7c6062372  esmfold_3B_v1.pt
+d37a0d0dbe7431e48a72072b9180b16b  esm2_t36_3B_UR50D.pt
+ba6d997e29db07a2ad9dca20e024b102  esm2_t33_650M_UR50D.pt
+8039fc9cee7f71cd2633b13b5a38ff50  esm2_t6_8M_UR50D.pt
+2f0a1775bf8fc366a1a85e2019eca288  boltz2_conf.ckpt
+8e93dadedd6edb7a4d170f6051b99ec0  boltz2_aff.ckpt
+81c6339c7553bec981ca62c5e9e78db5  boltz1_conf.ckpt
+5399454dcbbba695ab01f88deede577c  mols.tar
+aa43b8ba95608ce179033e990e39b4f3  ccd.pkl
