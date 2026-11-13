@@ -7,9 +7,9 @@
   1) 用 PyMOL ray-trace 渲染 TEM-1 β-内酰胺酶的 AlphaFold 模型两张图（**同一相机**）：
        A. 按「模型预测的逐残基有害性」着色（cividis 顺序色标）
        B. 按「Cβ 接触数（埋藏度）」着色（同一色标，不同量纲）
-     催化 Ser70 用朱红球体标出，Ω-loop（163–178）用紫红高亮。
+     催化 Ser68（前体编号，= Ambler Ser70）用朱红球体标出，Ω-loop（前体 162–177）用紫红高亮。
      N 端信号肽（1–23，AlphaFold 里是一条无序长尾，且不在 DMS 测序范围内）不渲染。
-  2) 再渲一张「探针图」：只显示 Ser70（纯红）与 Ω-loop（纯绿），用来反解它们在成像上的
+  2) 再渲一张「探针图」：只显示催化 Ser68（纯红）与 Ω-loop（纯绿），用来反解它们在成像上的
      像素位置 —— 这样标注就能由 matplotlib 用矢量文字叠上去，
      **PyMOL 内不写任何文字**（否则 PDF 里嵌不进字体）。
 
@@ -29,8 +29,8 @@ PDB = os.path.join(DATA, "AF-P62593-F1-model.pdb")
 OUTDIR = os.path.join(RES, "pymol")
 os.makedirs(OUTDIR, exist_ok=True)
 
-CATALYTIC = [70]                      # 论文使用的催化 Ser70 锚点
-OMEGA = list(range(163, 179))          # Ω-loop 163–178
+CATALYTIC = [68]                      # 前体编号的催化 Ser68（= Ambler Ser70）
+OMEGA = list(range(162, 178))          # Ω-loop 前体 162–177
 NTERM = 23                             # N 端信号肽（不渲染）
 N_BINS = 24
 SIZE = 1200                            # 渲染边长（px）

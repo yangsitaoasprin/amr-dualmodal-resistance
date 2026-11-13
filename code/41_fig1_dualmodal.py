@@ -7,7 +7,7 @@
 (a) 折外预测 vs 实验 DMS 分数散点（TEM-1，8M backbone，n = 4,996）+ ROC 插图
 (b) 模型 × backbone 对照图：4 个模型 × 3 个 backbone 的 Spearman ρ（±1 SD，5 折）
 (c) 置换重要性发散条形（8M backbone，9 个特征；序列侧蓝 / 结构侧绿，负值斜纹）
-(d) 逐残基预测有害性景观（263 个有测序位点；灰阶=埋藏度，形状=到 Ser70 距离）
+(d) 逐残基预测有害性景观（263 个有测序位点；灰阶=埋藏度，形状=到催化 Ser68 的距离）
 (e) PyMOL 结构面板：TEM-1 AlphaFold 模型，按「预测有害性」与「Cβ 接触数」各渲一张
 
 数据全部来自 repository/results/ 与 repository/data/ 下已核对过的 CSV，零新增计算。
@@ -265,7 +265,7 @@ ax.text(0.0, 0.985, "per-position ρ = %.3f (P = %.1e, n = %d positions)\n"
         % (rho_pos, p_pos, len(PP), len(both)),
         transform=ax.transAxes, ha="left", va="top", fontsize=S["note"], color=INK,
         linespacing=1.45)
-ax.text((OM_LO + OM_HI) / 2, 0.02, "Ω-loop 163–178",
+ax.text((OM_LO + OM_HI) / 2, 0.02, "Ω-loop 162–177",
         transform=ax.get_xaxis_transform(), ha="center", va="bottom",
         fontsize=S["note"], color="#9A7414")
 ax.legend(handles=[Line2D([], [], marker="o", color="none", markerfacecolor="#8C8C8C",
@@ -308,7 +308,7 @@ for k, (fn, kmin, kmax, cblab) in enumerate(imgs):
                   color=INK, loc="left", pad=3)
     # 探针反解的像素坐标 -> matplotlib 矢量叠加（白描边保证在结构底色上可读）
     for (xy, col, lab, dx, dy) in [
-            (probe["s70_px"], "#D55E00", "Ser70", 26, -26),
+            (probe["s70_px"], "#D55E00", "Ser68", 26, -26),
             (probe["omega_px"], OMEGA_C, "Ω-loop", 30, 24)]:
         axi.scatter([xy[0]], [xy[1]], s=155, facecolors="none", edgecolors=col,
                     linewidths=1.1, zorder=6)
@@ -325,9 +325,9 @@ for k, (fn, kmin, kmax, cblab) in enumerate(imgs):
         F.panel(axi, "e")
 
 fig.legend(handles=[Line2D([], [], marker="o", color="none", markerfacecolor="#D55E00",
-                           markersize=4.0, label="catalytic Ser70 (sphere)"),
+                           markersize=4.0, label="catalytic Ser68 (sphere)"),
                     Line2D([], [], marker="s", color="none", markerfacecolor=OMEGA_C,
-                           markersize=4.0, label="Ω-loop 163–178 (highlight)")],
+                           markersize=4.0, label="Ω-loop 162–177 (highlight)")],
            loc="lower center", bbox_to_anchor=(0.5, 0.006), ncol=2, fontsize=S["note"],
            frameon=False, handletextpad=0.3, columnspacing=1.2)
 
