@@ -2,7 +2,7 @@
 
 Generated from the released tree; one row per script. `Outputs` lists the artefacts the script writes, so the provenance of any table or figure can be traced in one hop. Regenerate with `python audit_20261113/_make_manifest.py`.
 
-Totals: **88 scripts, 11568 lines**, grouped by pipeline stage.
+Totals: **87 scripts, 11214 lines**, grouped by pipeline stage.
 
 ## 1. Feature construction and core models
 
@@ -24,6 +24,7 @@ Totals: **88 scripts, 11568 lines**, grouped by pipeline stage.
 
 | script | purpose | outputs |
 |---|---|---|
+| `code/29_dhfr_holo_controls.py` | DHFR holo-anchor control for Table S16d | `dhfr_holo_controls.csv` |
 | `code/49_render_all_figures.py` | render all 12 figures and sync them into repository/figures/ | -- |
 | `code/50_rerun_pipeline.py` | re-run the 13 result scripts and write results/canonical_rerun_log.txt | -- |
 | `code/51_collect_numbers.py` | collect every manuscript number into results/canonical_numbers.json | `canonical_numbers.json` |
@@ -81,8 +82,6 @@ Totals: **88 scripts, 11568 lines**, grouped by pipeline stage.
 | `gates/93_verify_manuscript.py` | stale-value guards, transfer directions, docx integrity | -- |
 | `gates/94_audit_captions.py` | caption gate: sample size, spread, test and P value | -- |
 | `gates/95_verify_links.py` | every path cited in the paper, SI and README must resolve | `xxx.csv` |
-| `gates/96_verify_docs.py` | keep the documentation in step with the code and the data | -- |
-| `gates/97_verify_si.py` | keep the supplementary tables tied to the released results | -- |
 
 ## 6. Archived one-shot scripts
 

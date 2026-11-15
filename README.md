@@ -114,8 +114,6 @@ gates/                          # verification only; each gate is standalone
   93_verify_manuscript.py      # stale-value guards, docx integrity
   94_audit_captions.py         # caption style (n / error bars / test+P)
   95_verify_links.py           # every path cited in the paper/SI resolves
-  96_verify_docs.py            # MANIFEST / README numbers / cited script names
-  97_verify_si.py              # SI tables vs results/ (targeted + traceability)
   97_verify_si.py              # SI tables vs results/ (targeted + traceability)
 archive/                        # authors' working tree only, NOT distributed:
                                 #   one-shot scripts that already ran

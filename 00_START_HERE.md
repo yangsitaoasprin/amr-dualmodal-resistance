@@ -127,7 +127,7 @@ search the other way round.
 
 ## 4. Verify in five minutes
 
-Nothing below writes to the manuscript; the seven gates are read-only and print a verdict.
+Nothing below writes to the manuscript; the five gates are read-only and print a verdict.
 
 ```bash
 cd repository/gates
@@ -136,8 +136,6 @@ python 92_audit_table3_sd.py      # recompute Table 3, check the SD convention -
 python 93_verify_manuscript.py    # headline values, transfer directions, .docx integrity
 python 94_audit_captions.py       # caption completeness (n / spread / test and P)
 python 95_verify_links.py         # every path cited in the paper and SI exists
-python 96_verify_docs.py          # MANIFEST, README numbers and cited script names agree
-python 97_verify_si.py            # supplementary tables trace to the released results
 python 97_verify_si.py            # supplementary tables trace to the released results
 ```
 
