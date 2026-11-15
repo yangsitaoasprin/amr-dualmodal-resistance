@@ -2,7 +2,7 @@
 
 Generated from the released tree; one row per script. `Outputs` lists the artefacts the script writes, so the provenance of any table or figure can be traced in one hop. Regenerate with `python audit_20261113/_make_manifest.py`.
 
-Totals: **87 scripts, 11313 lines**, grouped by pipeline stage.
+Totals: **88 scripts, 11568 lines**, grouped by pipeline stage.
 
 ## 1. Feature construction and core models
 
@@ -82,6 +82,7 @@ Totals: **87 scripts, 11313 lines**, grouped by pipeline stage.
 | `gates/94_audit_captions.py` | caption gate: sample size, spread, test and P value | -- |
 | `gates/95_verify_links.py` | every path cited in the paper, SI and README must resolve | `xxx.csv` |
 | `gates/96_verify_docs.py` | keep the documentation in step with the code and the data | -- |
+| `gates/97_verify_si.py` | keep the supplementary tables tied to the released results | -- |
 
 ## 6. Archived one-shot scripts
 

@@ -33,9 +33,10 @@ cd code
 | 5 | `python 92_audit_table3_sd.py` | — | `mismatches: 0 of 15` | ~40 s |
 | 6 | `python 93_verify_manuscript.py` | — | no `CHECK` lines; stale-value guards all 0 | ~10 s |
 | 7 | `python 94_audit_captions.py` | — | `ALL: PASS` (6/6 captions) | ~2 s |
-| 8 | `python 96_verify_docs.py` | — | `RESULT: PASS` (MANIFEST, README numbers, cited names) | ~3 s |
-| 9 | `python 95_verify_links.py` | — | `no dangling references` | ~1 s |
-| 9 | `cd ../code && python 55_build_docx.py` | `paper1_submission.docx`, `supplementary_data_S1.docx` | `OK, 6 pictures, 12 descr slots, 6 captions mapped` | ~20 s |
+| 8 | `python 97_verify_si.py` | — | `RESULT: PASS` (SI tables vs results/) | ~8 s |
+| 9 | `python 96_verify_docs.py` | — | `RESULT: PASS` (MANIFEST, README numbers, cited names) | ~3 s |
+| 10 | `python 95_verify_links.py` | — | `no dangling references` | ~1 s |
+| 11 | `cd ../code && python 55_build_docx.py` | `paper1_submission.docx`, `supplementary_data_S1.docx` | `OK, 6 pictures, 12 descr slots, 6 captions mapped` | ~20 s |
 
 Step 3 rewrites the PNG/PDF files in `figures/`. Bitwise comparison of the PNGs
 before and after a re-run is the strongest signal that nothing drifted; the PDFs
