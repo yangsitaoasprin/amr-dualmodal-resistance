@@ -43,6 +43,38 @@ SUPP_DESCR = [
 PANDOC = shutil.which("pandoc") or r"C:\ProgramData\anaconda3\Library\bin\pandoc.exe"
 
 
+def typeset_tables(xml, half_points=16, width_pct=5000):
+    """Make tables readable in Word: text at 8 pt and the full text width.
+
+    Pandoc emits table runs without a size, so they inherit 12 pt from Normal;
+    in a seven-column table that wraps every cell over two or three lines. The
+    width is set to 100 %% of the text column so the extra space is used.
+    """
+    def fix_run(m):
+        r = m.group(0)
+        r = re.sub(r'<w:sz w:val="\d+"/>', '<w:sz w:val="%d"/>' % half_points, r)
+        r = re.sub(r'<w:szCs w:val="\d+"/>', '<w:szCs w:val="%d"/>' % half_points, r)
+        if "<w:sz " not in r:
+            rpr = '<w:sz w:val="%d"/><w:szCs w:val="%d"/>' % (half_points, half_points)
+            if "<w:rPr>" in r:
+                r = r.replace("<w:rPr>", "<w:rPr>" + rpr, 1)
+            else:
+                r = r.replace("<w:r>", "<w:r><w:rPr>" + rpr + "</w:rPr>", 1)
+        return r
+
+    def fix_table(m):
+        t = m.group(0)
+        if "<w:tblW" in t:
+            t = re.sub(r'<w:tblW[^/]*/>', '<w:tblW w:w="%d" w:type="pct"/>' % width_pct, t, count=1)
+        else:
+            t = t.replace("<w:tblPr>", '<w:tblPr><w:tblW w:w="%d" w:type="pct"/>' % width_pct, 1)
+        t = t.replace('<w:tblLayout w:type="fixed"/>', '<w:tblLayout w:type="autofit"/>')
+        t = re.sub(r"<w:r>.*?</w:r>", fix_run, t, flags=re.S)
+        return t
+
+    return re.sub(r"<w:tbl>.*?</w:tbl>", fix_table, xml, flags=re.S)
+
+
 def build(src, dst, expect_pics=6, descrs=None):
     lst = descrs or DESCR
     pandoc_out = os.path.join(BASE, dst + ".pandoc.docx")
@@ -70,6 +102,7 @@ def build(src, dst, expect_pics=6, descrs=None):
                     return m.group(1) + 'descr="' + d + '"'
 
                 xml = pat.sub(repl, xml)
+                xml = typeset_tables(xml)
                 data = xml.encode("utf-8")
             zout.writestr(item, data)
 
